@@ -25,7 +25,7 @@ client.on(RoomEvent.MyMembership, async (room, membership, prevMembership) => {
     let event = room.getMember(client.getUserId())?.events?.member;
     if (!event) return;
     if (!event.getContent().is_direct) return;
-    if (Date.now() - event.getTs() > 10_000) return; // Ignore invites older than 10 seconds
+    if (Date.now() - event.getTs() > 60_000) return; // Ignore invites older than 1 minute
     await client.joinRoom(room.roomId);
 });
 
@@ -42,7 +42,7 @@ function timeoutResponse(resp, event) {
 client.on(RoomEvent.Timeline, async function (event, room, toStartOfTimeline) {
     if (event.getType() !== 'm.room.message' || event.event.sender === client.getUserId()) return;
     if (!isDmRoom(room)) return;
-    if (Date.now() - event.getTs() > 5_000) return; // Ignore messages older than 5 seconds, likely replays from earlier
+    if (Date.now() - event.getTs() > 10_000) return; // Ignore messages older than 10 seconds, likely replays from earlier
     console.log(1)
 
     let guessHistoryRaw = await knex('guesses').where('guesser', event.event.sender).andWhere('date', getDbDay());
