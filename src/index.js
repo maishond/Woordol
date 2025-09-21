@@ -22,7 +22,10 @@ client.once(ClientEvent.Sync, async () => {
 
 client.on(RoomEvent.MyMembership, async (room, membership, prevMembership) => {
     if (membership !== KnownMembership.Invite) return;
-    if (!room.getMember(client.getUserId())?.events?.member?.getContent().is_direct) return;
+    let event = room.getMember(client.getUserId())?.events?.member?.getContent();
+    if (!event) return;
+    if (!event.is_direct) return;
+    if (Date.now() - event.getTs() > 10_000) return; // Ignore invites older than 10 seconds
     await client.joinRoom(room.roomId);
 });
 
