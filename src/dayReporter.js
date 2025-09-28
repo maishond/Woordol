@@ -40,6 +40,10 @@ export async function updateDayReport() {
         );
 
         await createOrEditDayReport({
+            body: 'Afbeelding updaten...',
+            msgtype: 'm.text'
+        });
+        await createOrEditDayReport({
             body: 'Image',
             info: {
                 w: render.width,
