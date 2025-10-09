@@ -80,7 +80,7 @@ function scheduleNextUpdate() {
     nextMidnight.setHours(24, 0, 5, 0); // 5 seconds after midnight
     const msUntilNextMidnight = nextMidnight - now;
     setTimeout(async () => {
-        await updateDayReport();
         scheduleNextUpdate();
+        await updateDayReport();
     }, msUntilNextMidnight);
 }
