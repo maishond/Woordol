@@ -79,6 +79,6 @@ function scheduleNextUpdate() {
     setTimeout(async () => {
         scheduleNextUpdate();
         await updateDayReport(getDbDay());
-        await updateDayReport(getYesterdayDbDay());
+        await updateDayReport(getYesterdayDbDay(), false);
     }, msUntilNextMidnight);
 }
