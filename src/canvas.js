@@ -2,6 +2,7 @@ import * as PImage from 'pureimage';
 import {Buffer} from 'node:buffer';
 import {PassThrough} from 'node:stream';
 import {client} from './index.js';
+import {dbDayToDate, dbDayToNYT} from './knex.js';
 
 const font = PImage.registerFont(
     './JetBrainsMono-Regular.ttf',
@@ -12,7 +13,7 @@ await font.load();
 
 const KEYBOARD = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 
-export async function renderOverview(guessers, showGuesses = true) {
+export async function renderOverview(today, guessers, showGuesses = true) {
     const gc = Object.keys(guessers).length;
     const img = PImage.make(Math.min(180 * 4, gc * 180), (Math.ceil(gc / 4) * 180) + 30);
     const ctx = img.getContext('2d');
@@ -22,8 +23,7 @@ export async function renderOverview(guessers, showGuesses = true) {
     ctx.font = '25pt JetbrainsMono';
 
     ctx.fillStyle = '#999999';
-    let today = new Date();
-    ctx.fillText(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`, 5, 25);
+    ctx.fillText(`${dbDayToDate(today)}`, 5, 25);
 
     let xO = 0;
     let yO = 30;

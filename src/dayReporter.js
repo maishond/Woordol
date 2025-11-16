@@ -30,7 +30,7 @@ export async function updateDayReport(day, isToday = true) {
             msgtype: 'm.text'
         }, isToday);
     } else {
-        const render = await renderOverview(guessers, !isToday);
+        const render = await renderOverview(day, guessers, !isToday);
         const upload = await client.uploadContent(
             render.data,
             {
