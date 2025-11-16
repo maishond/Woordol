@@ -5,7 +5,7 @@ import {wordList} from './wordList.js';
 import {getTodaysWordle} from './nyt.js';
 import {evaluateGuess} from './gameLogic.js';
 import {renderGame} from './canvas.js';
-import knex, {getDbDay} from './knex.js';
+import knex, {getDbDay, getYesterdayDbDay} from './knex.js';
 import {updateDayReport} from './dayReporter.js';
 
 export const client = sdk.createClient({
@@ -18,6 +18,7 @@ await client.startClient({initialSyncLimit: 0});
 
 client.once(ClientEvent.Sync, async () => {
     await updateDayReport(getDbDay());
+    await updateDayReport(getYesterdayDbDay(), false);
 });
 
 client.on(RoomEvent.MyMembership, async (room, membership, prevMembership) => {
