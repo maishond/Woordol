@@ -43,7 +43,6 @@ client.on(RoomEvent.Timeline, async function (event, room, toStartOfTimeline) {
     if (event.getType() !== 'm.room.message' || event.event.sender === client.getUserId()) return;
     if (!isDmRoom(room)) return;
     if (Date.now() - event.getTs() > 10_000) return; // Ignore messages older than 10 seconds, likely replays from earlier
-    console.log(1)
 
     let guessHistoryRaw = await knex('guesses').where('guesser', event.event.sender).andWhere('date', getDbDay());
     let attempt = await knex('attempts').where('guesser', event.event.sender).andWhere('date', getDbDay()).first();
@@ -117,7 +116,7 @@ client.on(RoomEvent.Timeline, async function (event, room, toStartOfTimeline) {
         await client.sendTextMessage(room.roomId, `Helaas, al je pogingen zijn op. Het woord was ${todaysWord.toUpperCase()}...`);
     }
     try {
-        if (guessHistoryRaw.length > 1) {
+        if (guessHistoryRaw.length > 0) {
             await client.redactEvent(room.roomId, guessHistoryRaw[guessHistoryRaw.length - 1].game_canvas_id);
         }
         await client.redactEvent(room.roomId, event.getId());
