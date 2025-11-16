@@ -1,6 +1,6 @@
-import knex, {getDbDay} from './knex.js';
+import knex, {dbDayToNYT, getDbDay, getYesterdayDbDay} from './knex.js';
 import {client} from './index.js';
-import {getTodaysWordle} from './nyt.js';
+import {getWordleByDay} from './nyt.js';
 import {evaluateGuess} from './gameLogic.js';
 import {renderOverview} from './canvas.js';
 
@@ -8,16 +8,16 @@ const ROOM_ID = process.env.DAY_REPORTS_ROOM_ID;
 
 scheduleNextUpdate();
 
-export async function updateDayReport() {
-    const guesses = await knex('guesses').where('date', getDbDay());
+export async function updateDayReport(day, isToday = true) {
+    const guesses = await knex('guesses').where('date', day);
 
     const guessers = {};
-    const todaysWord = await getTodaysWordle();
+    const todaysWord = await getWordleByDay(dbDayToNYT(day));
 
     for (let guess of guesses) {
         let guesser = guessers[guess.guesser] ?? [];
         guessers[guess.guesser] = guesser;
-        guesser.push([guess.attempt, evaluateGuess(guess.guess, todaysWord)]);
+        guesser.push([guess.attempt, evaluateGuess(guess.guess, todaysWord), guess.guess]);
     }
 
     for (let guesser in guessers) {
@@ -25,12 +25,12 @@ export async function updateDayReport() {
     }
 
     if (Object.keys(guessers).length === 0) {
-        await createOrEditDayReport({
+        await createOrEditDayReport(day, {
             body: 'Nog niemand heeft Wordle gespeeld vandaag. Stuur mij een DM met je eerste gok!',
             msgtype: 'm.text'
-        });
+        }, isToday);
     } else {
-        const render = await renderOverview(guessers);
+        const render = await renderOverview(guessers, !isToday);
         const upload = await client.uploadContent(
             render.data,
             {
@@ -39,11 +39,7 @@ export async function updateDayReport() {
             }
         );
 
-        await createOrEditDayReport({
-            body: 'Afbeelding updaten...',
-            msgtype: 'm.text'
-        });
-        await createOrEditDayReport({
+        await createOrEditDayReport(day, {
             body: 'Image',
             info: {
                 w: render.width,
@@ -51,13 +47,14 @@ export async function updateDayReport() {
             },
             msgtype: 'm.image',
             url: upload.content_uri
-        });
+        }, isToday);
     }
 }
 
-async function createOrEditDayReport(content) {
-    const dayReport = await knex('day_reports').where('date', getDbDay()).first();
+async function createOrEditDayReport(day, content, createIfMissing) {
+    const dayReport = await knex('day_reports').where('date', day).first();
     if (!dayReport) {
+        if (!createIfMissing) return;
         const msg = await client.sendMessage(ROOM_ID, content);
         await knex('day_reports').insert({
             date: getDbDay(),
@@ -81,6 +78,7 @@ function scheduleNextUpdate() {
     const msUntilNextMidnight = nextMidnight - now;
     setTimeout(async () => {
         scheduleNextUpdate();
-        await updateDayReport();
+        await updateDayReport(getDbDay());
+        await updateDayReport(getYesterdayDbDay());
     }, msUntilNextMidnight);
 }

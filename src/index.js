@@ -17,7 +17,7 @@ export const client = sdk.createClient({
 await client.startClient({initialSyncLimit: 0});
 
 client.once(ClientEvent.Sync, async () => {
-    await updateDayReport();
+    await updateDayReport(getDbDay());
 });
 
 client.on(RoomEvent.MyMembership, async (room, membership, prevMembership) => {
@@ -122,6 +122,6 @@ client.on(RoomEvent.Timeline, async function (event, room, toStartOfTimeline) {
         await client.redactEvent(room.roomId, event.getId());
     } catch (ignored) {
     }
-    await updateDayReport();
+    await updateDayReport(getDbDay());
 });
 

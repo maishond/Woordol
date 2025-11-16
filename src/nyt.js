@@ -10,13 +10,16 @@ export async function getTodaysWordle() {
         return wordleState.word;
     }
 
-    const response = await fetch(`https://www.nytimes.com/svc/wordle/v2/${today}.json`);
-    if (!response.ok) {
-        throw new Error('Failed to fetch today\'s Wordle');
-    }
-
-    const data = await response.json();
-    wordleState.word = data.solution.toLowerCase();
+    wordleState.word = await getWordleByDay(today);
     wordleState.date = today;
     return wordleState.word;
+}
+
+export async function getWordleByDay(date) {
+    const response = await fetch(`https://www.nytimes.com/svc/wordle/v2/${date}.json`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch Wordle');
+    }
+    const data = await response.json();
+    return data.solution.toLowerCase();
 }

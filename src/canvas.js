@@ -12,7 +12,7 @@ await font.load();
 
 const KEYBOARD = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 
-export async function renderOverview(guessers) {
+export async function renderOverview(guessers, showGuesses = true) {
     const gc = Object.keys(guessers).length;
     const img = PImage.make(Math.min(180 * 4, gc * 180), (Math.ceil(gc / 4) * 180) + 30);
     const ctx = img.getContext('2d');
@@ -33,10 +33,11 @@ export async function renderOverview(guessers) {
 
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
+        ctx.font = '25pt JetbrainsMono';
         ctx.fillText(guesser.displayName || guesserId, xO + 90, yO + 25);
 
         let j = 0;
-        for (let [, attempt] of attempts) {
+        for (let [, attempt, text] of attempts) {
             for (let i = 0; i < 5; i++) {
                 let result = attempt[i];
 
@@ -49,6 +50,11 @@ export async function renderOverview(guessers) {
                 }
 
                 ctx.fillRect(xO + 30 + (i * 25), yO + 30 + (j * 25), 20, 20);
+                if (showGuesses) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '18pt JetbrainsMono';
+                    ctx.fillText(text[i].toUpperCase(), xO + 40 + (i * 25), yO + 46 + (j * 25));
+                }
             }
             j++;
         }
